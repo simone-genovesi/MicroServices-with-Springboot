@@ -7,8 +7,9 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="ms-discovery" />
         <module name="ms-auth" />
+        <module name="ms-post" />
+        <module name="ms-discovery" />
         <module name="ms-gateway" />
       </profile>
     </annotationProcessing>
@@ -18,6 +19,7 @@
       <module name="ms-auth" options="-parameters" />
       <module name="ms-discovery" options="-parameters" />
       <module name="ms-gateway" options="-parameters" />
+      <module name="ms-post" options="-parameters" />
     </option>
   </component>
 </project>

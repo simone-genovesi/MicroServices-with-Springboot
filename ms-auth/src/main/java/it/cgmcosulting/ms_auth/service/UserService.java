@@ -10,6 +10,7 @@ import it.cgmcosulting.ms_auth.payload.response.SigninResponse;
 import it.cgmcosulting.ms_auth.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class UserService {
 
@@ -40,6 +42,7 @@ public class UserService {
                 .createdAt(LocalDateTime.now())
                 .build();
         repo.save(user);
+        log.info("Signup : {} " , user );
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -55,7 +58,7 @@ public class UserService {
             throw new GenericException("Account not enabled", HttpStatus.FORBIDDEN);
 
         String jwt = jwtService.generateToken(user);
-        SigninResponse response = new SigninResponse(user.getUsername(), user.getRole().toString(), jwt);
+        SigninResponse response = new SigninResponse(user.getUsername(), user.getRole().name(), jwt);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -74,13 +77,11 @@ public class UserService {
             user.setUpdatedAt(LocalDateTime.now());
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body("Role has been updated fro user " + user.getUsername());
+                    .body("Role has been updated from user " + user.getUsername());
         }
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body("Same role");
-
-
     }
 }

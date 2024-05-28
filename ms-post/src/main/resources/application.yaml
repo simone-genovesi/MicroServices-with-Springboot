@@ -1,11 +1,11 @@
 server:
   port: 0
   servlet:
-    context-path: /ms-auth
+    context-path: /ms-post
 
 spring:
   application:
-    name: ms-auth
+    name: ms-post
 
   datasource:
     url: jdbc:mysql://${MYSQL_HOSTNAME}:${MYSQL_PORT}/${MYSQL_DATABASE_NAME}?ssl-mode=REQUIRED
@@ -35,7 +35,7 @@ spring:
 
 logging:
   level:
-    it.cgmconsulting.ms_auth: info
+    it.cgmconsulting.ms_post: info
     org.hibernate.orm.jdbc.bind: trace
     org.springframework: info
 
@@ -56,9 +56,3 @@ management:
   info:
     java.enabled: true
     os.enabled: true
-
-
-# CUSTOM PROPERTIES
-application:
-  security:
-    token: ${TOKEN}

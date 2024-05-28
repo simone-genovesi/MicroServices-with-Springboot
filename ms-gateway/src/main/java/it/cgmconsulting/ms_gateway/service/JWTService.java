@@ -6,7 +6,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
-import it.cgmconsulting.ms_gateway.service.JwtUser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +19,7 @@ public class JWTService {
     @Value("${application.security.token}")
     private String jwtSigningKey;
 
-    public JwtUser extractJwtUSer(String token) {
+    public JwtUser extractJwtUser(String token) {
         if(!isTokenExpired(token)) {
             try {
                 Claims claim = extractAllClaims(token);

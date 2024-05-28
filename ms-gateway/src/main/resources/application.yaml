@@ -11,7 +11,10 @@ spring:
           uri: lb://ms-auth #lb = load balancer
           predicates:
             - Path=/ms-auth/**
-
+        - id: ms-post
+          uri: lb://ms-post #lb = load balancer
+          predicates:
+            - Path=/ms-post/**
 eureka:
   instance:
     prefer-ip-address: true

@@ -42,16 +42,16 @@ public class AuthenticationFilter implements GatewayFilter {
             // estraggo i claims dal token: se l'operazione non riesce viene sollevata un'eccezione e blocco tutto
             JwtUser jwtUser;
             try{
-                jwtUser = jwtService.extractJwtUSer(jwt);
+                jwtUser = jwtService.extractJwtUser(jwt);
             } catch (Exception e) {
                 return this.setCustomResponse(exchange, e.getMessage(), HttpStatus.UNAUTHORIZED);
             }
 
             if(
                     (jwtUser.getRole().contains("ADMIN") && request.getURI().getPath().contains("v1")) ||
-                            (jwtUser.getRole().contains("WRITER") && request.getURI().getPath().contains("v2")) ||
-                            (jwtUser.getRole().contains("MEMBER") && request.getURI().getPath().contains("v3")) ||
-                            (jwtUser.getRole().contains("MODERATOR") && request.getURI().getPath().contains("v4"))
+                    (jwtUser.getRole().contains("WRITER") && request.getURI().getPath().contains("v2")) ||
+                    (jwtUser.getRole().contains("MEMBER") && request.getURI().getPath().contains("v3")) ||
+                    (jwtUser.getRole().contains("MODERATOR") && request.getURI().getPath().contains("v4"))
             )
                 populateRequestWithNewHeader(exchange, jwtUser);
             else

@@ -25,7 +25,11 @@ public class UserController {
     }
 
     @PutMapping("/v1/{userId}")
-    public ResponseEntity<?> changeRole(@PathVariable int userId, String role, @RequestHeader("userId") int id){
+    public ResponseEntity<?> changeRole(
+            @PathVariable int userId,
+            @RequestParam String role,
+            @RequestHeader("userId") int id
+    ){
         return service.changeRole(userId, role, id);
     }
 }
