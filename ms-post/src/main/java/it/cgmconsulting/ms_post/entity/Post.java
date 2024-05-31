@@ -3,6 +3,7 @@ package it.cgmconsulting.ms_post.entity;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
@@ -11,7 +12,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Getter @Setter @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Getter @Setter @NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Post {
 
     @Id
@@ -26,7 +28,7 @@ public class Post {
     Set<Section> sections = new HashSet<>();
 
     @Column(length = 255)
-    private String postimage;
+    private String postImage;
 
     private int author;
 
@@ -39,7 +41,7 @@ public class Post {
 
     public Post(String title, String postimage, int author) {
         this.title = title;
-        this.postimage = postimage;
+        this.postImage = postimage;
         this.author = author;
         this.createdAt = LocalDateTime.now();
     }

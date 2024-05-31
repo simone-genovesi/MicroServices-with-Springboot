@@ -4,6 +4,7 @@ import it.cgmcosulting.ms_auth.payload.request.SigninRequest;
 import it.cgmcosulting.ms_auth.payload.request.SignupRequest;
 import it.cgmcosulting.ms_auth.service.UserService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,5 +32,10 @@ public class UserController {
             @RequestHeader("userId") int id
     ){
         return service.changeRole(userId, role, id);
+    }
+
+    @GetMapping("/v99/{userId}")
+    public String getUsername(@PathVariable @Min(1) int userId){
+        return service.getUsername(userId);
     }
 }

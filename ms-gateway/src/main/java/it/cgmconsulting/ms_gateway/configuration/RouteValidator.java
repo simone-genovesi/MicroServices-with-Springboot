@@ -11,7 +11,7 @@ public class RouteValidator {
     // v2 -> WRITER
     // v3 -> MEMBER
     // v4 -> MODERATOR
-    // etc...
+    // v99 -> PER CHIAMATE INTERNE
 
     public boolean isOpenEndpoint(ServerHttpRequest req){
         return req.getURI().getPath().contains("v0");

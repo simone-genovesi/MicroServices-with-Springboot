@@ -84,4 +84,10 @@ public class UserService {
                 .status(HttpStatus.BAD_REQUEST)
                 .body("Same role");
     }
+
+    public String getUsername(int userId) {
+        String username = repo.getUsername(userId);
+        return username != null ? username :"anonymous";
+    }
+
 }

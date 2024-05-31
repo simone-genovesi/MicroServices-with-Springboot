@@ -3,12 +3,12 @@ package it.cgmconsulting.ms_post.controller;
 import it.cgmconsulting.ms_post.payload.request.PostRequest;
 import it.cgmconsulting.ms_post.service.PostService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,5 +21,23 @@ public class PostController {
             @RequestBody @Valid PostRequest request,
             @RequestHeader("userId") int author){
         return postService.createPost(request, author);
+    }
+
+    @GetMapping("/v0/{id}")
+    public ResponseEntity<?> getPostDetail(@PathVariable @Min(1) int id){
+        return postService.getPostDetail(id);
+    }
+
+    @GetMapping("/v0/bis/{id}")
+    public ResponseEntity<?> getPostDetailBis(@PathVariable @Min(1) int id){
+        return postService.getPostDetailBis(id);
+    }
+
+    @PatchMapping("/v1/{id}")
+    public ResponseEntity<?> publish(
+            @PathVariable @Min(1) int id,
+            @RequestParam(required = false) LocalDate publicationDate
+    ){
+        return postService.publish(id, publicationDate);
     }
 }

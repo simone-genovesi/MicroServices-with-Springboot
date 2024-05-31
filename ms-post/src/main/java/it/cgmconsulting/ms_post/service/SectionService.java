@@ -64,7 +64,9 @@ public class SectionService {
         s.setSubTitle(request.getSubTitle());
         s.setTitle(sectionTitle);
 
-        return ResponseEntity.status(200).body(SectionResponse.mapToResponse(s));
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(SectionResponse.mapToResponse(s));
     }
 
     protected Section findById(int id){

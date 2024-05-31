@@ -2,7 +2,9 @@ package it.cgmconsulting.ms_gateway.configuration;
 
 import it.cgmconsulting.ms_gateway.service.JWTService;
 import it.cgmconsulting.ms_gateway.service.JwtUser;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 
@@ -23,12 +25,18 @@ public class AuthenticationFilter implements GatewayFilter {
     private final RouteValidator routeValidator;
     private final JWTService jwtService;
 
+    @Value("${application.security.internalToken}")
+    String internalToken;
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain){
         ServerHttpRequest request = exchange.getRequest();
 
         // verifico se l'endpoint richiede il token
         if(routeValidator.isOpenEndpoint(request))
+            exchange.getResponse().setStatusCode(HttpStatus.OK);
+        else if( request.getHeaders().containsKey ("Authorization-Internal") &&
+                (request.getHeaders().getOrEmpty("Authorization-Internal").get(0)).equals(internalToken) )
             exchange.getResponse().setStatusCode(HttpStatus.OK);
         else {
             // Se per la request è richiesto il token ma nell'header non compare la chiave 'Authorization', blocco tutto perché significa che il token è mancante
