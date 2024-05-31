@@ -8,7 +8,7 @@
 		<version>3.2.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>it.cgmcosulting</groupId>
+	<groupId>it.cgmconsulting</groupId>
 	<artifactId>ms-discovery</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>ms-discovery</name>

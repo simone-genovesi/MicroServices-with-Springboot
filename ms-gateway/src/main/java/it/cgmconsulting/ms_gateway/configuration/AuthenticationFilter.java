@@ -2,7 +2,6 @@ package it.cgmconsulting.ms_gateway.configuration;
 
 import it.cgmconsulting.ms_gateway.service.JWTService;
 import it.cgmconsulting.ms_gateway.service.JwtUser;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;

@@ -1,16 +1,22 @@
 package it.cgmconsulting.ms_post.service;
 
+import it.cgmconsulting.ms_post.configuration.BeanManagement;
 import it.cgmconsulting.ms_post.entity.Post;
 import it.cgmconsulting.ms_post.exception.GenericException;
 import it.cgmconsulting.ms_post.exception.ResourceNotFoundException;
 import it.cgmconsulting.ms_post.payload.request.PostRequest;
 import it.cgmconsulting.ms_post.payload.response.PostDetailResponse;
+import it.cgmconsulting.ms_post.payload.response.PostResponse;
 import it.cgmconsulting.ms_post.payload.response.SectionResponse;
 import it.cgmconsulting.ms_post.repository.PostRepository;
 import it.cgmconsulting.ms_post.repository.SectionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -18,6 +24,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -31,6 +39,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final SectionRepository sectionRepository;
+    private final Map<String,String> getWriters;
 
 
     public ResponseEntity<?> createPost(PostRequest request, int author) {
@@ -49,7 +58,7 @@ public class PostService {
         p.setSections(sections);
 
         // recuperare lo username dell'autore
-        p.setAuthor(getUsername(postRepository.getAuthorId(id)).getBody());
+        p.setAuthor(getWriters.get(p.getAuthor()));
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -71,31 +80,31 @@ public class PostService {
                 .collect(Collectors.toSet());
 
         pdr.setSections(sections);
-        pdr.setAuthor(getUsername(p.getAuthor()).getBody());
+        pdr.setAuthor(getWriters.get(String.valueOf(p.getAuthor())));
 
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(pdr);
     }
 
-    private ResponseEntity<String> getUsername(int userId){
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization-Internal", internalToken);
-
-        HttpEntity<String> httpEntity = new HttpEntity<>(null, headers);
-
-        String url = "http://localhost:9090/ms-auth/v99/" + userId;
-
-        ResponseEntity<String> banner = null;
-        try{
-            banner = restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
-        } catch (RestClientException e){
-            log.error(e.getMessage());
-            return ResponseEntity.status(500).body(null);
-        }
-        return banner;
-    }
+//    private ResponseEntity<String> getUsername(int userId){
+//        RestTemplate restTemplate = new RestTemplate();
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.set("Authorization-Internal", internalToken);
+//
+//        HttpEntity<String> httpEntity = new HttpEntity<>(null, headers);
+//
+//        String url = "http://localhost:9090/ms-auth/v99/" + userId;
+//
+//        ResponseEntity<String> banner = null;
+//        try{
+//            banner = restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
+//        } catch (RestClientException e){
+//            log.error(e.getMessage());
+//            return ResponseEntity.status(500).body(null);
+//        }
+//        return banner;
+//    }
 
     public ResponseEntity<?> publish(int id, LocalDate publicationDate) {
         // se publicationDate non viene passata = LocalDate.now()
@@ -117,31 +126,22 @@ public class PostService {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(singlePostDetail(p));
-    }
-
-    private PostDetailResponse singlePostDetail(Post post){
-        PostDetailResponse pdr = new PostDetailResponse(
-                post.getId(),
-                post.getTitle(),
-                post.getPublicationDate(),
-                post.getPostImage()
-        );
-
-        Set<SectionResponse> sections = post.getSections()
-                .stream()
-                .map(SectionResponse::mapToResponse)
-                .collect(Collectors.toSet());
-
-        String username = getUsername(post.getAuthor()).getBody();
-        pdr.setSections(sections);
-        pdr.setAuthor(username);
-
-        return pdr;
+                .body("Post published");
     }
 
     public Post findById(int id){
         return postRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Post", "id", id));
+    }
+
+    public ResponseEntity<?> getLastPublishedPost(int pageNumber, int pageSize, String sortBy, String direction) {
+        // return List<PostResponse>
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.Direction.valueOf(direction.toUpperCase()), sortBy);
+        Page<PostResponse> posts = postRepository.getLastPublishedPost(pageable, LocalDate.now());
+        List<PostResponse> list  = posts.getContent();
+        Map<String,String> m = getWriters;
+        for(PostResponse p : list)
+            p.setAuthor(getWriters.get(p.getAuthor()));
+        return ResponseEntity.ok(list);
     }
 }
