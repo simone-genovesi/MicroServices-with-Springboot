@@ -83,12 +83,12 @@ public class UserService {
         if (!user.getRole().name().equals(role)){
             user.setRole(Role.valueOf(role.toUpperCase()));
             user.setUpdatedAt(LocalDateTime.now());
-            if(role.equals("WRITER")){
-                // aggiorno mappa getWriters su ms-post
-                ResponseEntity<?> r = sendNeWriter(user.getId(), user.getUsername());
-                if(r.getStatusCode() != HttpStatus.OK)
-                    return ResponseEntity.status(503).body("Change role to WRITER failed");
-            }
+//            if(role.equals("WRITER")){
+//                // aggiorno mappa getWriters su ms-post
+//                ResponseEntity<?> r = sendNeWriter(user.getId(), user.getUsername());
+//                if(r.getStatusCode() != HttpStatus.OK)
+//                    return ResponseEntity.status(503).body("Change role to WRITER failed");
+//            }
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body("Role has been updated from user " + user.getUsername());
@@ -104,28 +104,29 @@ public class UserService {
         return username != null ? username :"anonymous";
     }
 
-    public Map<Integer, String> getUsernames(String role) {
-        Set<SimpleUserResponse> set = repo.getSimpleUsers(Role.valueOf(role.toUpperCase()));
-        return set.stream().collect(Collectors.toMap(SimpleUserResponse::getId, SimpleUserResponse::getUsername));
+    public Map<Integer, String> getUsernames(Set<Integer> authorIds) {
+        Set<SimpleUserResponse> set = repo.getSimpleUsers(authorIds);
+        Map<Integer, String> map = set.stream().collect(Collectors.toMap(SimpleUserResponse::getId, SimpleUserResponse::getUsername));
+        return map;
     }
 
-    private ResponseEntity<?> sendNeWriter(int userId, String username){
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization-Internal", internalToken);
-
-        HttpEntity<String> httpEntity = new HttpEntity<>(null, headers);
-
-        String url = Consts.GATEWAY+"/"+Consts.MS_POST+"/v99/writers?id={userId}&username={username}";
-
-        ResponseEntity<String> r = null;
-        try{
-            r = restTemplate.exchange(url, HttpMethod.PUT, httpEntity, String.class, userId, username);
-        } catch (RestClientException e){
-            log.error(e.getMessage());
-            return ResponseEntity.status(500).body(null);
-        }
-        return r;
-    }
+//    private ResponseEntity<?> sendNeWriter(int userId, String username){
+//        RestTemplate restTemplate = new RestTemplate();
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.set("Authorization-Internal", internalToken);
+//
+//        HttpEntity<String> httpEntity = new HttpEntity<>(null, headers);
+//
+//        String url = Consts.GATEWAY+"/"+Consts.MS_POST+"/v99/writers?id={userId}&username={username}";
+//
+//        ResponseEntity<String> r = null;
+//        try{
+//            r = restTemplate.exchange(url, HttpMethod.PUT, httpEntity, String.class, userId, username);
+//        } catch (RestClientException e){
+//            log.error(e.getMessage());
+//            return ResponseEntity.status(500).body(null);
+//        }
+//        return r;
+//    }
 
 }

@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="ms-auth" />
         <module name="ms-post" />
+        <module name="ms-comment" />
         <module name="ms-discovery" />
         <module name="ms-gateway" />
       </profile>
@@ -17,6 +18,7 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="ms-auth" options="-parameters" />
+      <module name="ms-comment" options="-parameters" />
       <module name="ms-discovery" options="-parameters" />
       <module name="ms-gateway" options="-parameters" />
       <module name="ms-post" options="-parameters" />

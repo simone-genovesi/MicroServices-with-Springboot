@@ -15,6 +15,10 @@ spring:
           uri: lb://ms-post #lb = load balancer
           predicates:
             - Path=/ms-post/**
+        - id: ms-comment
+          uri: lb://ms-comment #lb = load balancer
+          predicates:
+            - Path=/ms-comment/**
 eureka:
   instance:
     prefer-ip-address: true

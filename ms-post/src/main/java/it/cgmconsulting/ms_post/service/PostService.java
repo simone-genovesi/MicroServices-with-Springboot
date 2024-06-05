@@ -19,8 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,13 +38,14 @@ public class PostService {
     private final PostRepository postRepository;
     private final SectionRepository sectionRepository;
     private final Map<String,String> getWriters;
+    private final BeanManagement bean;
 
 
     public ResponseEntity<?> createPost(PostRequest request, int author) {
         Post post = new Post(request.getTitle(), request.getPostImage(), author);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(postRepository.save(post));
+        postRepository.save(post);
+        bean.getWriters();
+        return ResponseEntity.status(201).body(post);
     }
 
     public ResponseEntity<?> getPostDetail(int id) {
@@ -143,5 +142,11 @@ public class PostService {
         for(PostResponse p : list)
             p.setAuthor(getWriters.get(p.getAuthor()));
         return ResponseEntity.ok(list);
+    }
+
+    public ResponseEntity<Boolean> existsById(int postId) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(postRepository.existsById(postId));
     }
 }

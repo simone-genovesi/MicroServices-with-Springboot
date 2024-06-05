@@ -1,7 +1,7 @@
-package it.cgmconsulting.ms_post.configuration;
+package it.cgmconsulting.ms_comment.configuration;
 
-import it.cgmconsulting.ms_post.repository.PostRepository;
-import it.cgmconsulting.ms_post.utils.Consts;
+import it.cgmconsulting.ms_comment.repository.CommentRepository;
+import it.cgmconsulting.ms_comment.utils.Consts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,13 +23,13 @@ public class BeanManagement {
     @Value("${application.security.internalToken}")
     String internalToken;
 
-    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
 
     @Bean("getWriters")
     @Scope("prototype")
     public Map<String, String> getWriters(){
 
-        Set<Integer> authorIds = postRepository.getAuthorIds();
+        Set<Integer> authorIds = commentRepository.getAuthorIds();
 
         RestTemplate restTemplate = new RestTemplate();
 

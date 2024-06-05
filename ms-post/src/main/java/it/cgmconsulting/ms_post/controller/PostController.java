@@ -53,12 +53,17 @@ public class PostController {
         return postService.getLastPublishedPost(pageNumber, pageSize, sortBy, direction);
     }
 
-    @PutMapping("/v99/writers")
-    public ResponseEntity<?> updateWriters(
-            @RequestParam String id,
-            @RequestParam String username
-    ){
-        getWriters.put(id, username);
-        return ResponseEntity.ok(null);
+    @GetMapping("/v99/{postId}")
+    public ResponseEntity<Boolean> existsPost(@PathVariable @Min(1) int postId) {
+        return postService.existsById(postId); // Restituisce direttamente un booleano
     }
+
+//    @PutMapping("/v99/writers")
+//    public ResponseEntity<?> updateWriters(
+//            @RequestParam String id,
+//            @RequestParam String username
+//    ){
+//        getWriters.put(id, username);
+//        return ResponseEntity.ok(null);
+//    }
 }
