@@ -14,6 +14,9 @@ spring:
     password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
     #driver-class-name: org.mariadb.jdbc.Driver
+    hikari:
+      pool-name: ms-post-connection-pool
+      maximum-pool-size: 10
 
   jpa:
     hibernate:
@@ -52,10 +55,46 @@ management:
   endpoints:
     web:
       exposure:
-        include: info, health
+        include: info,health,endpoints
+  health:
+    circuit-breakers:
+      enabled: true
+  endpoint:
+    health:
+      show-details: always
   info:
     java.enabled: true
     os.enabled: true
+
+resilience4j.circuitbreaker:
+  instances:
+    a-tempo:
+      register-health-indicator: true
+      # Apertura del circuito se la request impiega più tempo di quanto stimato
+      sliding-window-type: TIME_BASED
+      # Numero di tentativi di request
+      sliding-window-size: 1
+      # Soglia - in percentuale - di fallimenti (se al 100%, basta che la chiamata al microservizio fallisca una volta sola)
+      slow-call-rate-threshold: 100
+      # Un'interazione è considerata lenta se impiega più di n secondi a rispondere
+      slow-call-duration-threshold: 2s
+      # Tempo per passare dallo stato di OPEN allo stato di HALF_OPEN
+      wait-duration-in-open-state: 60s
+      minimum-number-of-calls: 1
+      # Numero massimo di request permesse in stato HALF_OPEN
+      permitted-number-of-calls-in-half-open-state: 1
+      automatic-transition-from-open-to-half-open-enabled: true
+    a-tentativi:
+      register-health-indicator: true
+      # Apertura del circuito se la request fallisce n volte
+      sliding-window-type: COUNT_BASED
+      # Numero di tentativi di request
+      sliding-window-size: 1
+      # Soglia - in percentuale - di fallimenti (se al 100%, basta che la chiamata al microservizio fallisca una volta sola)
+      failure-rate-threshold: 100
+      wait-duration-in-open-state: 60s
+      permitted-number-of-calls-in-half-open-state: 1
+      automatic-transition-from-open-to-half-open-enabled: true
 
 # CUSTOM PROPERTIES
 application:

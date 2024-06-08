@@ -2,11 +2,17 @@ package it.cgmconsulting.ms_comment.service;
 
 import it.cgmconsulting.ms_comment.configuration.BeanManagement;
 import it.cgmconsulting.ms_comment.entity.Comment;
+import it.cgmconsulting.ms_comment.exception.GenericException;
 import it.cgmconsulting.ms_comment.exception.ResourceNotFoundException;
 import it.cgmconsulting.ms_comment.payload.request.CommentRequest;
+import it.cgmconsulting.ms_comment.payload.response.CommentFullResponse;
+import it.cgmconsulting.ms_comment.payload.response.CommentFullResponseBis;
 import it.cgmconsulting.ms_comment.payload.response.CommentResponse;
+import it.cgmconsulting.ms_comment.payload.response.EditorialStaffCommentResponse;
 import it.cgmconsulting.ms_comment.repository.CommentRepository;
+import it.cgmconsulting.ms_comment.repository.EditorialStaffCommentRepository;
 import it.cgmconsulting.ms_comment.utils.Consts;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +21,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +34,8 @@ import java.util.Map;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final Map<String,String> getWriters;
+    private final EditorialStaffCommentRepository escRepository;
+    private final Map<String,String> getMembers;
     private final BeanManagement bean;
 
     @Value("${application.security.internalToken}")
@@ -32,14 +44,13 @@ public class CommentService {
 
     public ResponseEntity<?> createComment(CommentRequest request, int author) {
 
-        if(Boolean.FALSE.equals(existsPost(request.getPost()).getBody()))
-            throw new ResourceNotFoundException("Post", "id", request.getPost());
+        checkPost(request.getPost());
 
         Comment comment = new Comment(request.getComment(), author, request.getPost());
 
         commentRepository.save(comment);
 
-        bean.getWriters();
+        bean.getMembers(); // aggiorno la mappatura nel caso un nuovo member scrivesse un commento
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -70,15 +81,111 @@ public class CommentService {
         CommentResponse c = commentRepository.getComment(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", id));
 
-        c.setAuthor(getWriters.get(String.valueOf(c.getAuthor())));
+        c.setAuthor(getMembers.get(String.valueOf(c.getAuthor())));
 
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(c);
     }
 
+    public ResponseEntity<?> getCommentBis(int id) {
+        Comment comment = findById(id);
+        CommentResponse cr = new CommentResponse(
+                comment.getId(),
+                comment.getComment(),
+                getMembers.get(String.valueOf(comment.getAuthor())),
+                comment.getUpdatedAt() != null ? comment.getUpdatedAt() : comment.getCreatedAt());
+        return ResponseEntity.ok(cr);
+    }
+
     public Comment findById(int id){
         return commentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", id));
+    }
+
+
+    public ResponseEntity<?> getComments(int postId) {
+
+        checkPost(postId);
+
+        List<CommentResponse> list = commentRepository.getComments(postId);
+
+        for (CommentResponse c: list)
+            c.setAuthor(getMembers.get(c.getAuthor()));
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(list);
+    }
+
+    private void checkPost(int postId){
+        if(Boolean.FALSE.equals(existsPost(postId).getBody()))
+            throw new ResourceNotFoundException("Post", "id", postId);
+    }
+
+    @Transactional
+    public ResponseEntity<?> updateComment(int commentId, String comment, int author) {
+        Comment c = findById(commentId);
+
+        if(author != c.getAuthor())
+            throw new GenericException("You're not the comment author", HttpStatus.FORBIDDEN);
+        if(LocalDateTime.now().isAfter(c.getCreatedAt().plusMinutes(1)))
+            throw new GenericException("You cannot change the comment. The editing time is over.", HttpStatus.FORBIDDEN);
+
+        c.setComment(comment);
+        c.setUpdatedAt(LocalDateTime.now());
+
+        CommentResponse cr = new CommentResponse(
+                c.getId(),
+                c.getComment(),
+                getMembers.get(String.valueOf(c.getAuthor())),
+                c.getUpdatedAt() != null ? c.getUpdatedAt() : c.getCreatedAt()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(cr);
+    }
+
+    @Transactional
+    public ResponseEntity<?> deleteComment(int commentId, int author) {
+        Comment c = findById(commentId);
+        if(c.getAuthor() != author)
+            throw new GenericException("You can only delete your comment", HttpStatus.FORBIDDEN);
+
+        if(c.getCreatedAt().isBefore(LocalDateTime.now().minusMinutes(1)))
+            throw new GenericException("You can delete your comment within 60 seconds from publication", HttpStatus.FORBIDDEN);
+
+        commentRepository.delete(c);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+
+    }
+
+    public ResponseEntity<?> getFullComments(int postId) {
+        List<CommentResponse> commentResponses = commentRepository.getComments(postId);
+        if(commentResponses.isEmpty())
+            throw new ResourceNotFoundException("Comments", "postId", postId);
+        List<EditorialStaffCommentResponse> escResponses = escRepository.getEscs(postId);
+        List<CommentFullResponse> fullResponses = new ArrayList<>();
+        for (CommentResponse comment : commentResponses) {
+            Optional<EditorialStaffCommentResponse> matchingEsc = escResponses.stream()
+                    .filter(esc -> esc.getEscId() == comment.getId())
+                    .findFirst();
+            comment.setAuthor(getMembers.get(comment.getAuthor()));
+            CommentFullResponse fullResponse = new CommentFullResponse();
+            fullResponse.setComment(comment);
+            fullResponse.setEscComment(matchingEsc.orElse(null));
+            fullResponses.add(fullResponse);
+
+        }
+        return ResponseEntity.ok(fullResponses);
+    }
+
+    public ResponseEntity<?> getFullCommentsBis(int postId) {
+        List<CommentFullResponseBis> list = commentRepository.getFullComments(postId);
+        for(CommentFullResponseBis c : list){
+            c.setAuthor(getMembers.get(c.getAuthor()));
+        }
+        return ResponseEntity.ok(list);
     }
 }

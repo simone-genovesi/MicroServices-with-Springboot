@@ -27,7 +27,7 @@ public class BeanManagement {
 
     @Bean("getWriters")
     @Scope("prototype")
-    public Map<String, String> getWriters(){
+    public Map<String, String> getMembers(){
 
         Set<Integer> authorIds = commentRepository.getAuthorIds();
 

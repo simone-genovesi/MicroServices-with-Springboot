@@ -43,4 +43,6 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     Optional<Post> findByIdAndPublicationDateIsNotNullAndPublicationDateLessThanEqual(int id, LocalDate now);
 
+    boolean existsByIdAndPublicationDateIsNotNullAndPublicationDateLessThanEqual(int id, LocalDate now);
+
 }

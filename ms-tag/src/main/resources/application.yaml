@@ -1,7 +1,9 @@
 server:
   port: 0
   servlet:
-    context-path: /ms-comment
+    # http://hostname:port/context-path/request-mapping/uri
+    # http://localhost:8090/ms-tag/...
+    context-path: /ms-tag
   compression:
     enabled: true
     min-response-size: 2048
@@ -9,7 +11,11 @@ server:
 
 spring:
   application:
-    name: ms-comment
+    name: ms-tag
+
+  # Zipkin configuration
+  #zipkin.base-url: http://localhost:9411/
+  #sleuth.sampler.probability: 1.0
 
   datasource:
     url: jdbc:mysql://${MYSQL_HOSTNAME}:${MYSQL_PORT}/${MYSQL_DATABASE_NAME}?ssl-mode=REQUIRED
@@ -19,8 +25,13 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     #driver-class-name: org.mariadb.jdbc.Driver
     hikari:
-      pool-name: ms-comment-connection-pool
+      pool-name: ms-tag-connection-pool
       maximum-pool-size: 10
+      #minimum-idle: 3
+      #idle-timeout: 600000
+      #register-mbeans: true
+      #connection-timeout: 30000
+      #max-lifetime: 1800000
 
   data:
     jpa:
@@ -35,8 +46,8 @@ spring:
     hibernate:
       # ddl-auto values:
       # create-drop -> creazione del db all'all'avvio dell'applicazione e distruzione del db alla chiusura dell'applicazione
-      # update -> aggiorna il db con le tabelle 'nuove', modifica quelle attuali, non elimina eventuali colonne che non esistono piÃ¹
-      # validated -> confronta le entitÃ  con le tabelle e solleva eccezioni se ci sono incongruenze
+      # update -> aggiorna il db con le tabelle 'nuove', modifica quelle attuali, non elimina eventuali colonne che non esistono più
+      # validated -> confronta le entità con le tabelle e solleva eccezioni se ci sono incongruenze
       # none: non viene fatto nulla (da usare assolutamente in produzione)
       ddl-auto: update
     properties:
@@ -51,7 +62,7 @@ spring:
 
 logging:
   level:
-    it.cgmconsulting.ms_comment: info
+    it.cgmconsulting.ms_tag: info
     org.hibernate.orm.jdbc.bind: trace
     org.springframework: info
 
@@ -68,7 +79,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: info, health
+        include: health,info
   info:
     java.enabled: true
     os.enabled: true
@@ -76,5 +87,4 @@ management:
 # CUSTOM PROPERTIES
 application:
   security:
-    token: ${TOKEN}
     internalToken: ${INTERNAL_TOKEN}

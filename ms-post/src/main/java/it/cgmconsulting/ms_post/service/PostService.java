@@ -44,8 +44,11 @@ public class PostService {
     public ResponseEntity<?> createPost(PostRequest request, int author) {
         Post post = new Post(request.getTitle(), request.getPostImage(), author);
         postRepository.save(post);
+        PostResponse p = new PostResponse(post.getId(), post.getTitle(), post.getPublicationDate());
         bean.getWriters();
-        return ResponseEntity.status(201).body(post);
+        if(!getWriters.isEmpty())
+            p.setAuthor(getWriters.get(String.valueOf(post.getAuthor())));
+        return ResponseEntity.status(201).body(p);
     }
 
     public ResponseEntity<?> getPostDetail(int id) {
@@ -147,6 +150,6 @@ public class PostService {
     public ResponseEntity<Boolean> existsById(int postId) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(postRepository.existsById(postId));
+                .body(postRepository.existsByIdAndPublicationDateIsNotNullAndPublicationDateLessThanEqual(postId, LocalDate.now()));
     }
 }

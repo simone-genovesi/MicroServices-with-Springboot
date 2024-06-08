@@ -9,6 +9,7 @@
         <option value="$PROJECT_DIR$/ms-gateway/pom.xml" />
         <option value="$PROJECT_DIR$/ms-post/pom.xml" />
         <option value="$PROJECT_DIR$/ms-comment/pom.xml" />
+        <option value="$PROJECT_DIR$/ms-tag/pom.xml" />
       </list>
     </option>
   </component>
