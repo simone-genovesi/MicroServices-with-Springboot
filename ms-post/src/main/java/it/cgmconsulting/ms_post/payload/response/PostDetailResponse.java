@@ -22,6 +22,11 @@ public class PostDetailResponse {
     // from ms-auth (User)
     private String author;
 
+    private Set<String> tagNames;
+
+    // from ms-rating
+    private double average;
+
     public PostDetailResponse(int id, String title, LocalDate publicationDate, String postImage) {
         this.id = id;
         this.title = title;

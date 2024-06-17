@@ -7,11 +7,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="ms-tag" />
         <module name="ms-auth" />
         <module name="ms-post" />
         <module name="ms-comment" />
         <module name="ms-discovery" />
+        <module name="ms-tag" />
+        <module name="ms-rating" />
         <module name="ms-gateway" />
       </profile>
     </annotationProcessing>
@@ -23,6 +24,7 @@
       <module name="ms-discovery" options="-parameters" />
       <module name="ms-gateway" options="-parameters" />
       <module name="ms-post" options="-parameters" />
+      <module name="ms-rating" options="-parameters" />
       <module name="ms-tag" options="-parameters" />
     </option>
   </component>

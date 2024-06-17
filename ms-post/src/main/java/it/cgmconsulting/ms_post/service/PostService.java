@@ -10,15 +10,19 @@ import it.cgmconsulting.ms_post.payload.response.PostResponse;
 import it.cgmconsulting.ms_post.payload.response.SectionResponse;
 import it.cgmconsulting.ms_post.repository.PostRepository;
 import it.cgmconsulting.ms_post.repository.SectionRepository;
+import it.cgmconsulting.ms_post.utils.Consts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -39,6 +43,7 @@ public class PostService {
     private final SectionRepository sectionRepository;
     private final Map<String,String> getWriters;
     private final BeanManagement bean;
+    private final CircuitBreakerService circuitBreakerService;
 
 
     public ResponseEntity<?> createPost(PostRequest request, int author) {
@@ -62,6 +67,12 @@ public class PostService {
         // recuperare lo username dell'autore
         p.setAuthor(getWriters.get(p.getAuthor()));
 
+        // recuperare i Tag associati al post
+        p.setTagNames(circuitBreakerService.getTagNames(p.getId()).getBody());
+
+        // recupero media voti del post in oggetto
+        p.setAverage(circuitBreakerService.getAverage(id));
+
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(p);
@@ -84,9 +95,39 @@ public class PostService {
         pdr.setSections(sections);
         pdr.setAuthor(getWriters.get(String.valueOf(p.getAuthor())));
 
+        // recuperare i Tag associati al post
+        pdr.setTagNames(circuitBreakerService.getTagNames(p.getId()).getBody());
+
+        // recupero media voti del post in oggetto
+        pdr.setAverage(circuitBreakerService.getAverage(id));
+
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(pdr);
+    }
+/*
+    private ResponseEntity<Set<String>> postTags(int postId){
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization-Internal", internalToken);
+
+        HttpEntity<String> httpEntity = new HttpEntity<>(null, headers);
+
+        String url = Consts.GATEWAY + "/" + Consts.MS_TAG + "/v99/" + postId;
+
+        ResponseEntity<Set<String>> response = null;
+        try{
+            response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    httpEntity,
+                    new ParameterizedTypeReference<Set<String>>() {}
+            );
+        } catch (RestClientException e){
+            log.error(e.getMessage());
+            return ResponseEntity.status(500).body(null);
+        }
+        return response;
     }
 
 //    private ResponseEntity<String> getUsername(int userId){
@@ -107,6 +148,7 @@ public class PostService {
 //        }
 //        return banner;
 //    }
+*/
 
     public ResponseEntity<?> publish(int id, LocalDate publicationDate) {
         // se publicationDate non viene passata = LocalDate.now()

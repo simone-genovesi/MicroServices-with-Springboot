@@ -46,8 +46,8 @@ spring:
     hibernate:
       # ddl-auto values:
       # create-drop -> creazione del db all'all'avvio dell'applicazione e distruzione del db alla chiusura dell'applicazione
-      # update -> aggiorna il db con le tabelle 'nuove', modifica quelle attuali, non elimina eventuali colonne che non esistono più
-      # validated -> confronta le entità con le tabelle e solleva eccezioni se ci sono incongruenze
+      # update -> aggiorna il db con le tabelle 'nuove', modifica quelle attuali, non elimina eventuali colonne che non esistono piï¿½
+      # validated -> confronta le entitï¿½ con le tabelle e solleva eccezioni se ci sono incongruenze
       # none: non viene fatto nulla (da usare assolutamente in produzione)
       ddl-auto: update
     properties:
@@ -76,6 +76,9 @@ eureka:
       default-zone: localhost:8761/eureka
 
 management:
+  endpoint:
+    health:
+      show-details: always
   endpoints:
     web:
       exposure:
@@ -83,6 +86,12 @@ management:
   info:
     java.enabled: true
     os.enabled: true
+  otlp:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+  tracing:
+    sampling:
+      probability: 1.0
 
 # CUSTOM PROPERTIES
 application:

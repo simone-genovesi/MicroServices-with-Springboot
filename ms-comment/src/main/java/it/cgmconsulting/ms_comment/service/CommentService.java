@@ -16,6 +16,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -37,6 +39,7 @@ public class CommentService {
     private final EditorialStaffCommentRepository escRepository;
     private final Map<String,String> getMembers;
     private final BeanManagement bean;
+    private final CacheManager cacheManager;
 
     @Value("${application.security.internalToken}")
     String internalToken;
@@ -187,5 +190,12 @@ public class CommentService {
             c.setAuthor(getMembers.get(c.getAuthor()));
         }
         return ResponseEntity.ok(list);
+    }
+
+    public void manageCache(int postId, String cacheName){
+        CaffeineCache cache = (CaffeineCache) cacheManager.getCache(cacheName);
+        assert cache != null;
+        Object x = cache.get(postId);
+        log.info(x.toString());
     }
 }
